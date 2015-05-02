@@ -7,9 +7,9 @@ import time
 import functools
 import platform
 import hash_check_qrc
-from PyQt4 import QtGui, QtCore, uic
+from PyQt5 import QtGui, QtCore, QtWidgets, uic
 
-__version__ = "0.3.2"
+__version__ = "0.4.0"
 
 # Windows7 Taskbar Grouping (Don't group with Python)
 if platform.system() == 'Windows' and platform.release() == '7':
@@ -66,9 +66,13 @@ class GenericThread(QtCore.QThread):
 		self.function(*self.args,**self.kwargs)
 		return
 
-class Checksum_Calculator(QtGui.QMainWindow):
+class Checksum_Calculator(QtWidgets.QMainWindow):
+
+	signal_update_progessbar = QtCore.pyqtSignal(int)
+	signal_treeview_add_new_file = QtCore.pyqtSignal(str, str, str, str)
+
 	def __init__(self):
-		QtGui.QMainWindow.__init__(self)
+		QtWidgets.QMainWindow.__init__(self)
 		
 		self.ui = uic.loadUi('hash_check.ui', self)
 		
@@ -133,8 +137,8 @@ class Checksum_Calculator(QtGui.QMainWindow):
 		self.action_enabler()
 		
 		self.thread = GenericThread(self.checksum_calc_thread)
-		self.connect(self, QtCore.SIGNAL("update_progessbar(int)"), self.update_progessbar)
-		self.connect(self, QtCore.SIGNAL("treeview_add_new_file(QString, QString, QString, QString)"), self.treeview_add_new_file)
+		self.signal_update_progessbar.connect(self.update_progessbar)
+		self.signal_treeview_add_new_file.connect(self.treeview_add_new_file)
 		self.thread.start()
 	
 	def action_enabler(self):
@@ -175,10 +179,10 @@ class Checksum_Calculator(QtGui.QMainWindow):
 		"You should have received a copy of the GNU General Public License<br>"
 		"along with this program.  If not, see <a href='http://www.gnu.org/licenses/'>http://www.gnu.org/licenses/</a>."
 		) % __version__
-		QtGui.QMessageBox.about(self, "About Hash Check", about_text)
+		QtWidgets.QMessageBox.about(self, "About Hash Check", about_text)
 		
 	def action_add_file(self):
-		files = QtGui.QFileDialog.getOpenFileNames(self, "Add files to check for their hashsums", self.last_path)
+		files = QtWidgets.QFileDialog.getOpenFileNames(self, "Add files to check for their hashsums", self.last_path)
 		if not files:
 			return False
 		set_hash_algorithm = self.ui.comboBox.currentText()
@@ -188,7 +192,7 @@ class Checksum_Calculator(QtGui.QMainWindow):
 			self.last_path = os.path.dirname(filepath)
 			
 	def action_import_index(self):
-		filepath = QtGui.QFileDialog.getOpenFileName(self, "Import checksum index file", self.last_path, "Checksum index files (*.sfv *.md5 *.sha* *sum*)")
+		filepath = QtWidgets.QFileDialog.getOpenFileName(self, "Import checksum index file", self.last_path, "Checksum index files (*.sfv *.md5 *.sha* *sum*)")
 		if not filepath:
 			return False
 		set_hash_algorithm = self.ui.comboBox.currentText()
@@ -198,7 +202,7 @@ class Checksum_Calculator(QtGui.QMainWindow):
 		self.automatic_guess = False
 		
 	def action_export_index(self):
-		filepath, filter = QtGui.QFileDialog.getSaveFileNameAndFilter (self, "Export checksums to index file", self.last_path, "SFV file (*.sfv);;MD5 file (*.md5);;SHA1 file (*.sha1)")
+		filepath, filter = QtWidgets.QFileDialog.getSaveFileNameAndFilter (self, "Export checksums to index file", self.last_path, "SFV file (*.sfv);;MD5 file (*.md5);;SHA1 file (*.sha1)")
 		if not filepath:
 			return False
 		filter_to_algorithm = {"SFV file (*.sfv)":"CRC32", "MD5 file (*.md5)":"MD5", "SHA1 file (*.sha1)":"SHA1"}
@@ -273,7 +277,7 @@ class Checksum_Calculator(QtGui.QMainWindow):
 			algorithm = self.algorithm_queue.pop(0)
 			reference = self.reference_queue.pop(0)
 			hash = self.hashsum(self.algo_dict[algorithm], url)
-			self.emit( QtCore.SIGNAL('treeview_add_new_file(QString, QString, QString, QString)'), algorithm, url, hash, reference)
+			self.signal_treeview_add_new_file.emit(algorithm, url, hash, reference)
 			self.action_enabler()
 		
 	def update_progessbar(self, progress):
@@ -344,22 +348,22 @@ class Checksum_Calculator(QtGui.QMainWindow):
 			self.reference_queue.append(hash_reference)
 			if self.ask_again:
 				if believed_hash_algorithm != set_hash_algorithm:
-					msg_box = QtGui.QMessageBox(self)
+					msg_box = QtWidgets.QMessageBox(self)
 					msg_box.setWindowTitle('Which hash algorithm to use')
 					msg_box.setText(os.path.basename(filepath))
 					msg_box.setInformativeText("The hash algorithm is believed to be %s. Would you like to use automatic guess instead of the selected %s?" % (believed_hash_algorithm, set_hash_algorithm))
-					msg_box.setStandardButtons(QtGui.QMessageBox.Yes | QtGui.QMessageBox.YesToAll | QtGui.QMessageBox.No | QtGui.QMessageBox.NoToAll)
-					msg_box.setDefaultButton(QtGui.QMessageBox.YesToAll)
+					msg_box.setStandardButtons(QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.YesToAll | QtWidgets.QMessageBox.No | QtWidgets.QMessageBox.NoToAll)
+					msg_box.setDefaultButton(QtWidgets.QMessageBox.YesToAll)
 					reply = msg_box.exec_()
-					if reply == QtGui.QMessageBox.Yes:
+					if reply == QtWidgets.QMessageBox.Yes:
 						self.algorithm_queue.append(believed_hash_algorithm)
-					elif reply == QtGui.QMessageBox.YesToAll:
+					elif reply == QtWidgets.QMessageBox.YesToAll:
 						self.algorithm_queue.append(believed_hash_algorithm)
 						self.ask_again = False
 						self.automatic_guess = True
-					elif reply == QtGui.QMessageBox.No:
+					elif reply == QtWidgets.QMessageBox.No:
 						self.algorithm_queue.append(set_hash_algorithm)
-					elif reply == QtGui.QMessageBox.NoToAll:
+					elif reply == QtWidgets.QMessageBox.NoToAll:
 						self.algorithm_queue.append(set_hash_algorithm)
 						self.ask_again = False
 				else:
@@ -383,7 +387,7 @@ class Checksum_Calculator(QtGui.QMainWindow):
 		return (hash, hash_algo)
 			
 	def treeview_add_new_file(self, algorithm, filepath, hash, hash_reference=None):
-		row = QtGui.QTreeWidgetItem()
+		row = QtWidgets.QTreeWidgetItem()
 		row.filepath = filepath
 		row.setIcon(0, self.icons["blank"])
 		row.setText(0, os.path.basename(filepath))
@@ -414,7 +418,7 @@ class Checksum_Calculator(QtGui.QMainWindow):
 		except AttributeError:
 			hash = hashlib.new(hashname)
 		if not os.path.exists(filename):
-			self.emit( QtCore.SIGNAL('update_progessbar(int)'), 100)
+			self.signal_update_progessbar.emit(100)
 			return "N/A"
 		total_size = os.path.getsize(filename)
 		total_read = 0
@@ -427,14 +431,14 @@ class Checksum_Calculator(QtGui.QMainWindow):
 				progress = int(total_read/total_size * 100)
 				if progress >= last_output + 5:
 					last_output = progress
-					self.emit( QtCore.SIGNAL('update_progessbar(int)'), progress)
+					self.signal_update_progessbar.emit(progress)
 				while self.pause_check:
 					time.sleep(0.1)
 				if self.abort_check:
-					self.emit( QtCore.SIGNAL('update_progessbar(int)'), 0)
+					self.signal_update_progessbar.emit(0)
 					return hash.hexdigest().upper()
 		self.abort_check = False
-		self.emit( QtCore.SIGNAL('update_progessbar(int)'), 100)
+		self.signal_update_progessbar.emit(100)
 		return hash.hexdigest().upper()
 
 def on_close(win):
@@ -442,7 +446,13 @@ def on_close(win):
 		
 	
 if __name__ == "__main__":
-	app = QtGui.QApplication(sys.argv)
+	if getattr(sys, 'frozen', False):
+		# The application is frozen
+		os.chdir(os.path.dirname(os.path.abspath(sys.executable)))
+	else:
+		# The application is not frozen
+		os.chdir(os.path.dirname(os.path.abspath(__file__)))
+	app = QtWidgets.QApplication(sys.argv)
 	win = Checksum_Calculator()
 	app.aboutToQuit.connect(functools.partial(on_close, win=win))
 	sys.exit(app.exec_())
