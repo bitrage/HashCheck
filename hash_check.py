@@ -9,7 +9,7 @@ import platform
 import hash_check_qrc
 from PyQt5 import QtGui, QtCore, QtWidgets, uic
 
-__version__ = "0.4.0"
+__version__ = "0.4.1"
 
 # Windows7 Taskbar Grouping (Don't group with Python)
 if platform.system() == 'Windows' and platform.release() == '7':
@@ -202,7 +202,7 @@ class Checksum_Calculator(QtWidgets.QMainWindow):
 		self.automatic_guess = False
 		
 	def action_export_index(self):
-		filepath, filter = QtWidgets.QFileDialog.getSaveFileNameAndFilter (self, "Export checksums to index file", self.last_path, "SFV file (*.sfv);;MD5 file (*.md5);;SHA1 file (*.sha1)")
+		filepath, filter = QtWidgets.QFileDialog.getSaveFileName(self, "Export checksums to index file", self.last_path, "SFV file (*.sfv);;MD5 file (*.md5);;SHA1 file (*.sha1)")
 		if not filepath:
 			return False
 		filter_to_algorithm = {"SFV file (*.sfv)":"CRC32", "MD5 file (*.md5)":"MD5", "SHA1 file (*.sha1)":"SHA1"}
