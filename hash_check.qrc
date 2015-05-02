@@ -1,0 +1,27 @@
+<RCC>
+  <qresource prefix="window">
+    <file alias="ico16">icons/ico16.png</file>
+    <file alias="ico24">icons/ico24.png</file>
+    <file alias="ico32">icons/ico32.png</file>
+    <file alias="ico48">icons/ico48.png</file>
+    <file alias="ico64">icons/ico64.png</file>
+  </qresource>
+  <qresource prefix="list">
+    <file alias="accept">icons/own/check.png</file>
+    <file alias="error">icons/own/error.png</file>
+    <file alias="exclamation">icons/own/alert.png</file>
+	<file alias="question">icons/own/question.png</file>
+  </qresource>
+  <qresource prefix="menu">
+    <file alias="about">icons/own/about.png</file>
+    <file alias="add">icons/own/add.png</file>
+    <file alias="clear">icons/own/clear.png</file>
+    <file alias="del">icons/own/del.png</file>
+    <file alias="export">icons/own/export.png</file>
+    <file alias="import">icons/own/import.png</file>
+    <file alias="pause">icons/own/pause.png</file>
+    <file alias="play">icons/own/play.png</file>
+    <file alias="skip">icons/own/skip.png</file>
+    <file alias="stop">icons/own/stop.png</file>
+  </qresource>
+</RCC>
