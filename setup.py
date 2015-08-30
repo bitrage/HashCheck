@@ -1,6 +1,6 @@
 import sys
 # import glob
-# import os
+import os
 # import shutil
 import hash_check
 from cx_Freeze import setup, Executable
@@ -8,7 +8,8 @@ from cx_Freeze import setup, Executable
 
 # Dependencies are automatically detected, but it might need fine tuning.
 includefiles = ['hash_check.ui']
-build_exe_options = {"icon": "icons/logo.ico", 'include_files': includefiles}
+build_dir = os.path.abspath('../build') 
+build_exe_options = {"icon": "icons/logo.ico", 'include_files': includefiles, 'build_exe': build_dir}
 
 # GUI applications require a different base on Windows (the default is for a
 # console application).
